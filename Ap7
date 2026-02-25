@@ -1,0 +1,32 @@
+import numpy as np
+# Step 1: Define functions to calculate distance metrics
+def euclidean_distance(point1, point2):
+return np.sqrt(np.sum((point1 - point2) ** 2))
+def manhattan_distance(point1, point2):
+return np.sum(np.abs(point1 - point2))
+# Step 2: Define the main function
+def main():
+print("Distance Metrics Calculator (Euclidean & Manhattan)\n")
+try:
+# User inputs for two points
+point1 = input("Enter the first point (comma-separated values, e.g., 2,3): ")
+point2 = input("Enter the second point (comma-separated values, e.g., 5,7): ")
+# Convert the inputs to numpy arrays
+point1 = np.array([float(x) for x in point1.split(",")])
+point2 = np.array([float(x) for x in point2.split(",")])
+# Check if the dimensions of the points match
+if point1.shape != point2.shape:
+print("Error: Points must have the same dimensions!")
+return
+# Calculate distances
+euclidean = euclidean_distance(point1, point2)
+manhattan = manhattan_distance(point1, point2)
+# Display results
+print(f"\nDistances between {point1} and {point2}:")
+print(f"Euclidean Distance: {euclidean:.4f}")
+print(f"Manhattan Distance: {manhattan:.4f}")
+except ValueError:
+print("Error: Invalid input. Please enter numerical values separated by commas.")
+# Run the program
+if __name__ == "__main__":
+main()
