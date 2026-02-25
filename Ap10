@@ -1,0 +1,81 @@
+import numpy as np
+import random
+# Step 1: Define the grid environment
+class GridEnvironment:
+def __init__(self, size=(4, 4), start=(0, 0), goal=(3, 3)):
+self.size = size
+self.start = start
+self.goal = goal
+self.state = start
+self.actions = ['up', 'down', 'left', 'right']
+def reset(self):
+self.state = self.start
+return self.state
+def step(self, action):
+x, y = self.state
+if action == 'up' and x > 0:
+x -= 1
+elif action == 'down' and x < self.size[0] - 1:
+x += 1
+elif action == 'left' and y > 0:
+y -= 1
+elif action == 'right' and y < self.size[1] - 1:
+y += 1
+self.state = (x, y)
+reward = 1 if self.state == self.goal else -0.1 # Reward structure
+done = self.state == self.goal
+return self.state, reward, done
+# Step 2: Define the Q-learning agent
+class QLearningAgent:
+def __init__(self, env, learning_rate=0.1, discount_factor=0.9, epsilon=0.1):
+self.env = env
+self.lr = learning_rate
+self.gamma = discount_factor
+self.epsilon = epsilon
+self.q_table = {}
+self._initialize_q_table()
+def _initialize_q_table(self):
+for x in range(self.env.size[0]):
+for y in range(self.env.size[1]):
+self.q_table[(x, y)] = {action: 0 for action in self.env.actions}
+def choose_action(self, state):
+if random.random() < self.epsilon: # Explore
+return random.choice(self.env.actions)
+else: # Exploit
+return max(self.q_table[state], key=self.q_table[state].get)
+def update_q_value(self, state, action, reward, next_state):
+best_next_action = max(self.q_table[next_state], key=self.q_table[next_state].get)
+td_target = reward + self.gamma * self.q_table[next_state][best_next_action]
+td_error = td_target - self.q_table[state][action]
+self.q_table[state][action] += self.lr * td_error
+def train(self, episodes):
+for episode in range(episodes):
+state = self.env.reset()
+total_reward = 0
+done = False
+while not done:
+action = self.choose_action(state)
+next_state, reward, done = self.env.step(action)
+self.update_q_value(state, action, reward, next_state)
+state = next_state
+total_reward += reward
+print(f"Episode {episode + 1}: Total Reward = {total_reward:.2f}")
+def test(self):
+state = self.env.reset()
+path = [state]
+total_reward = 0
+done = False
+while not done:
+action = max(self.q_table[state], key=self.q_table[state].get)
+state, reward, done = self.env.step(action)
+path.append(state)
+total_reward += reward
+print(f"Test Run: Path = {path}, Total Reward = {total_reward:.2f}")
+# Step 3: Main Program
+if __name__ == "__main__":
+env = GridEnvironment(size=(4, 4), start=(0, 0), goal=(3, 3))
+agent = QLearningAgent(env, learning_rate=0.1, discount_factor=0.9, epsilon=0.2)
+print("Training the agent...\n")
+agent.train(episodes=500)
+print("\nTesting the agent...\n")
+agent.test()
