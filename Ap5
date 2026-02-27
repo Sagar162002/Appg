@@ -1,69 +1,100 @@
 import numpy as np
+
 # Step 1: Define the sigmoid activation function and its derivative
 def sigmoid(x):
-return 1 / (1 + np.exp(-x))
+    return 1 / (1 + np.exp(-x))
+
 def sigmoid_derivative(x):
-return x * (1 - x)
+    return x * (1 - x)
+
+
 # Step 2: Define the neural network architecture
 class NeuralNetwork:
-def __init__(self, input_size, hidden_size, output_size, learning_rate=0.1):
-# Initialize weights and biases
-self.input_size = input_size
-self.hidden_size = hidden_size
-self.output_size = output_size
-self.learning_rate = learning_rate
-# Randomly initialize weights and biases
-self.weights_input_hidden = np.random.rand(input_size, hidden_size)
-self.bias_hidden = np.random.rand(hidden_size)
-self.weights_hidden_output = np.random.rand(hidden_size, output_size)
-self.bias_output = np.random.rand(output_size)
-def forward(self, X):
-# Forward propagation
-self.input_layer = X
-self.hidden_layer_input = np.dot(X, self.weights_input_hidden) + self.bias_hidden
-self.hidden_layer_output = sigmoid(self.hidden_layer_input)
-self.output_layer_input = np.dot(self.hidden_layer_output, self.weights_hidden_output) + self.bias_output
-self.output_layer_output = sigmoid(self.output_layer_input)
-return self.output_layer_output
-def backward(self, X, y, output):
-# Backward propagation
-# Calculate output layer error and delta
-output_error = y - output
-output_delta = output_error * sigmoid_derivative(output)
-# Calculate hidden layer error and delta
-hidden_error = np.dot(output_delta, self.weights_hidden_output.T)
-hidden_delta = hidden_error * sigmoid_derivative(self.hidden_layer_output)
-# Update weights and biases
-self.weights_hidden_output += np.dot(self.hidden_layer_output.T, output_delta) * self.learning_rate
-self.bias_output += np.sum(output_delta, axis=0) * self.learning_rate
-self.weights_input_hidden += np.dot(X.T, hidden_delta) * self.learning_rate
-self.bias_hidden += np.sum(hidden_delta, axis=0) * self.learning_rate
-def train(self, X, y, epochs):
-for epoch in range(epochs):
-# Perform forward and backward propagation
-output = self.forward(X)
-self.backward(X, y, output)
-# Calculate and print loss
-loss = np.mean((y - output) ** 2)
-if (epoch + 1) % 1000 == 0:
-print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss:.4f}")
-# Step 3: Train the neural network on a dataset (e.g., XOR problem)
+
+    def __init__(self, input_size, hidden_size, output_size, learning_rate=0.1):
+        # Initialize weights and biases
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+        self.learning_rate = learning_rate
+
+        # Randomly initialize weights and biases
+        self.weights_input_hidden = np.random.rand(input_size, hidden_size)
+        self.bias_hidden = np.random.rand(hidden_size)
+        self.weights_hidden_output = np.random.rand(hidden_size, output_size)
+        self.bias_output = np.random.rand(output_size)
+
+    def forward(self, X):
+        # Convert 1D input to 2D (important for testing single sample)
+        if X.ndim == 1:
+            X = X.reshape(1, -1)
+
+        self.input_layer = X
+        self.hidden_layer_input = np.dot(X, self.weights_input_hidden) + self.bias_hidden
+        self.hidden_layer_output = sigmoid(self.hidden_layer_input)
+
+        self.output_layer_input = np.dot(self.hidden_layer_output, self.weights_hidden_output) + self.bias_output
+        self.output_layer_output = sigmoid(self.output_layer_input)
+
+        return self.output_layer_output
+
+    def backward(self, X, y, output):
+        # Output layer error
+        output_error = y - output
+        output_delta = output_error * sigmoid_derivative(output)
+
+        # Hidden layer error
+        hidden_error = np.dot(output_delta, self.weights_hidden_output.T)
+        hidden_delta = hidden_error * sigmoid_derivative(self.hidden_layer_output)
+
+        # Update weights and biases
+        self.weights_hidden_output += np.dot(self.hidden_layer_output.T, output_delta) * self.learning_rate
+        self.bias_output += np.sum(output_delta, axis=0) * self.learning_rate
+
+        self.weights_input_hidden += np.dot(X.T, hidden_delta) * self.learning_rate
+        self.bias_hidden += np.sum(hidden_delta, axis=0) * self.learning_rate
+
+    def train(self, X, y, epochs):
+        for epoch in range(epochs):
+            output = self.forward(X)
+            self.backward(X, y, output)
+
+            loss = np.mean((y - output) ** 2)
+
+            if (epoch + 1) % 1000 == 0:
+                print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss:.4f}")
+
+
+# Step 3: Train the neural network on XOR problem
 if __name__ == "__main__":
-# XOR dataset
-X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]]) # Input features
-y = np.array([[0], [1], [1], [0]]) # Target labels
-# Define the neural network
-input_size = 2
-hidden_size = 4
-output_size = 1
-learning_rate = 0.1
-epochs = 10000
-nn = NeuralNetwork(input_size, hidden_size, output_size, learning_rate)
-# Train the neural network
-print("Training the Neural Network...")
-nn.train(X, y, epochs)
-# Test the neural network
-print("\nTesting the Neural Network...")
-for i, test_input in enumerate(X):
-predicted_output = nn.forward(test_input)
-print(f"Input: {test_input}, Predicted Output: {predicted_output[0]:.4f}, Expected: {y[i][0]}")
+
+    # XOR dataset
+    X = np.array([[0, 0],
+                  [0, 1],
+                  [1, 0],
+                  [1, 1]])
+
+    y = np.array([[0],
+                  [1],
+                  [1],
+                  [0]])
+
+    # Define the neural network
+    input_size = 2
+    hidden_size = 4
+    output_size = 1
+    learning_rate = 0.1
+    epochs = 10000
+
+    nn = NeuralNetwork(input_size, hidden_size, output_size, learning_rate)
+
+    # Train the neural network
+    print("Training the Neural Network...")
+    nn.train(X, y, epochs)
+
+    # Test the neural network
+    print("\nTesting the Neural Network...")
+    for i, test_input in enumerate(X):
+        predicted_output = nn.forward(test_input)
+        print(f"Input: {test_input}, Predicted Output: {predicted_output[0][0]:.4f}, Expected: {y[i][0]}")
+        
