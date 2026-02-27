@@ -1,44 +1,68 @@
 import numpy as np
 import matplotlib.pyplot as plt
-# Step 1: Define the kernel function (Gaussian)
+
+# Step 1: Define the Gaussian kernel function
 def kernel(x, x_i, tau):
-return np.exp(-np.sum((x - x_i) ** 2) / (2 * tau ** 2))
-# Step 2: Implement the Locally Weighted Regression algorithm
+    return np.exp(-np.sum((x - x_i) ** 2) / (2 * tau ** 2))
+
+
+# Step 2: Implement Locally Weighted Regression
 def locally_weighted_regression(X, y, x_query, tau):
-"""
-Perform Locally Weighted Regression for a given query point.
-:param X: Training features (n_samples, n_features)
-:param y: Training target values (n_samples,)
-:param x_query: The query point (1, n_features)
-:param tau: Bandwidth parameter (controls smoothness)
-:return: Predicted value for the query point
-"""
-X = np.hstack((np.ones((X.shape[0], 1)), X)) # Add bias term
-x_query = np.hstack(([1], x_query)) # Add bias term to query point
-# Compute weights for each training point
-weights = np.array([kernel(x_query, x_i, tau) for x_i in X])
-# Compute weighted normal equation: theta = (X^T W X)^-1 X^T W y
-W = np.diag(weights) # Weight matrix
-theta = np.linalg.inv(X.T @ W @ X) @ X.T @ W @ y
-return x_query @ theta # Predicted value
-# Step 3: Visualize the results with a sample dataset
+    """
+    Perform Locally Weighted Regression for a given query point.
+    :param X: Training features (n_samples, n_features)
+    :param y: Training target values (n_samples,)
+    :param x_query: The query point (n_features,)
+    :param tau: Bandwidth parameter
+    :return: Predicted value
+    """
+
+    # Add bias term
+    X = np.hstack((np.ones((X.shape[0], 1)), X))
+    x_query = np.hstack(([1], x_query))
+
+    # Compute weights
+    weights = np.array([kernel(x_query, x_i, tau) for x_i in X])
+
+    # Create weight matrix
+    W = np.diag(weights)
+
+    # Compute theta using weighted normal equation
+    theta = np.linalg.inv(X.T @ W @ X) @ X.T @ W @ y
+
+    # Return prediction
+    return x_query @ theta
+
+
+# Step 3: Visualization
 def main():
-# Generate synthetic data (y = sin(x) + noise)
-np.random.seed(42)
-X = np.linspace(0, 10, 50).reshape(-1, 1)
-y = np.sin(X).ravel() + np.random.normal(scale=0.1, size=X.shape[0])
-# Query points for prediction
-X_query = np.linspace(0, 10, 100).reshape(-1, 1)
-tau = 0.5 # Bandwidth parameter (adjustable)
-# Predict values for query points
-y_pred = np.array([locally_weighted_regression(X, y, x_query, tau) for x_query in X_query])
-# Plot the results
-plt.scatter(X, y, color="blue", label="Training Data")
-plt.plot(X_query, y_pred, color="red", label="LWR Prediction")
-plt.xlabel("X")
-plt.ylabel("y")
-plt.title("Locally Weighted Regression (LWR)")
-plt.legend()
-plt.show()
+
+    # Generate synthetic data
+    np.random.seed(42)
+    X = np.linspace(0, 10, 50).reshape(-1, 1)
+    y = np.sin(X).ravel() + np.random.normal(scale=0.1, size=X.shape[0])
+
+    # Query points
+    X_query = np.linspace(0, 10, 100).reshape(-1, 1)
+
+    tau = 0.5  # Bandwidth parameter
+
+    # Predictions
+    y_pred = np.array([
+        locally_weighted_regression(X, y, x_query, tau)
+        for x_query in X_query
+    ])
+
+    # Plot
+    plt.scatter(X, y, label="Training Data")
+    plt.plot(X_query, y_pred, label="LWR Prediction")
+
+    plt.xlabel("X")
+    plt.ylabel("y")
+    plt.title("Locally Weighted Regression (LWR)")
+    plt.legend()
+    plt.show()
+
+
 if __name__ == "__main__":
-main()
+    main()
