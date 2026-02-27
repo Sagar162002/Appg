@@ -1,53 +1,67 @@
 import numpy as np
 from scipy.spatial.distance import euclidean
+
 class CaseBasedReasoning:
-def __init__(self):
-self.cases = [] # Store past cases as tuples of (features, label)
-def add_case(self, features, label):
-"""
-Add a new case to the case base.
-:param features: List of features (problem description)
-:param label: The solution or result for the case
-"""
-self.cases.append((np.array(features), label))
-def retrieve(self, query, k=1):
-"""
-Retrieve the k most similar cases to the query.
-:param query: List of features for the query case
-:param k: Number of similar cases to retrieve
-:return: List of the k most similar cases
-"""
-distances = [(case, euclidean(query, case[0])) for case in self.cases]
-distances.sort(key=lambda x: x[1]) # Sort by distance
-return distances[:k]
-def predict(self, query, k=1):
-"""
-Predict the label for the query case based on the k nearest cases.
-:param query: List of features for the query case
-:param k: Number of similar cases to use for prediction
-:return: Predicted label
-"""
-similar_cases = self.retrieve(query, k)
-labels = [case[0][1] for case in similar_cases]
-# Return the most common label
-return max(set(labels), key=labels.count)
+
+    def __init__(self):
+        self.cases = []  # Store past cases as tuples of (features, label)
+
+    def add_case(self, features, label):
+        """
+        Add a new case to the case base.
+        :param features: List of features (problem description)
+        :param label: The solution or result for the case
+        """
+        self.cases.append((np.array(features), label))
+
+    def retrieve(self, query, k=1):
+        """
+        Retrieve the k most similar cases to the query.
+        :param query: List of features for the query case
+        :param k: Number of similar cases to retrieve
+        :return: List of the k most similar cases
+        """
+        distances = [(case, euclidean(query, case[0])) for case in self.cases]
+        distances.sort(key=lambda x: x[1])  # Sort by distance
+        return distances[:k]
+
+    def predict(self, query, k=1):
+        """
+        Predict the label for the query case based on the k nearest cases.
+        :param query: List of features for the query case
+        :param k: Number of similar cases to use for prediction
+        :return: Predicted label
+        """
+        similar_cases = self.retrieve(query, k)
+        labels = [case[0][1] for case in similar_cases]
+
+        # Return the most common label
+        return max(set(labels), key=labels.count)
+
+
 # Example Usage
 if __name__ == "__main__":
-# Initialize the CBR system
-cbr = CaseBasedReasoning()
-# Add some past cases (features, label)
-cbr.add_case([2.5, 3.0], "Class A")
-cbr.add_case([1.0, 1.5], "Class B")
-cbr.add_case([3.0, 4.0], "Class A")
-cbr.add_case([0.5, 1.0], "Class B")
-# Query a new case
-query_case = [2.7, 3.5]
-print("Query Case:", query_case)
-# Retrieve similar cases
-similar_cases = cbr.retrieve(query_case, k=2)
-print("\nMost Similar Cases:")
-for case, distance in similar_cases:
-print(f"Features: {case[0]}, Label: {case[1]}, Distance: {distance:.2f}")
-# Predict the label for the query case
-prediction = cbr.predict(query_case, k=2)
-print("\nPredicted Label:", prediction)
+
+    # Initialize the CBR system
+    cbr = CaseBasedReasoning()
+
+    # Add some past cases (features, label)
+    cbr.add_case([2.5, 3.0], "Class A")
+    cbr.add_case([1.0, 1.5], "Class B")
+    cbr.add_case([3.0, 4.0], "Class A")
+    cbr.add_case([0.5, 1.0], "Class B")
+
+    # Query a new case
+    query_case = [2.7, 3.5]
+    print("Query Case:", query_case)
+
+    # Retrieve similar cases
+    similar_cases = cbr.retrieve(query_case, k=2)
+    print("\nMost Similar Cases:")
+
+    for case, distance in similar_cases:
+        print(f"Features: {case[0]}, Label: {case[1]}, Distance: {distance:.2f}")
+
+    # Predict the label for the query case
+    prediction = cbr.predict(query_case, k=2)
+    print("\nPredicted Label:", prediction)
