@@ -2,45 +2,68 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
+
 # Step 1: Define the KNN regression algorithm
 class KNNRegressor:
-def __init__(self, k=3):
-self.k = k
-def fit(self, X, y):
-self.X_train = X
-self.y_train = y
-def predict(self, X_test):
-predictions = []
-for x in X_test:
-# Calculate distances from x to all training points
-distances = np.sqrt(np.sum((self.X_train - x) ** 2, axis=1))
-# Get the indices of the k nearest neighbors
-nearest_neighbors_indices = np.argsort(distances)[:self.k]
-# Compute the average of the nearest neighbors' target values
-nearest_neighbors_targets = self.y_train[nearest_neighbors_indices]
-predictions.append(np.mean(nearest_neighbors_targets))
-return np.array(predictions)
-# Step 2: Create a small dataset for regression
-# Example: Predicting house prices based on size (in square feet)
-X = np.array([[600], [800], [1000], [1200], [1400], [1600], [1800], [2000]]) # Feature: Size
-y = np.array([150, 200, 250, 300, 350, 400, 450, 500]) # Target: Price (in $1000s)
-# Normalize the dataset for better performance
+
+    def __init__(self, k=3):
+        self.k = k
+
+    def fit(self, X, y):
+        self.X_train = X
+        self.y_train = y
+
+    def predict(self, X_test):
+        predictions = []
+
+        for x in X_test:
+            # Calculate Euclidean distance
+            distances = np.sqrt(np.sum((self.X_train - x) ** 2, axis=1))
+
+            # Get k nearest neighbors
+            nearest_neighbors_indices = np.argsort(distances)[:self.k]
+
+            # Get their target values
+            nearest_neighbors_targets = self.y_train[nearest_neighbors_indices]
+
+            # Append mean of nearest targets
+            predictions.append(np.mean(nearest_neighbors_targets))
+
+        return np.array(predictions)
+
+
+# Step 2: Create dataset
+X = np.array([[600], [800], [1000], [1200],
+              [1400], [1600], [1800], [2000]])
+
+y = np.array([150, 200, 250, 300,
+              350, 400, 450, 500])
+
+# Normalize dataset
 X = (X - X.min()) / (X.max() - X.min())
-# Step 3: Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
-# Step 4: Train the KNN regressor
+
+# Step 3: Train-test split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, random_state=42
+)
+
+# Step 4: Train model
 k = 3
 knn_regressor = KNNRegressor(k=k)
 knn_regressor.fit(X_train, y_train)
-# Step 5: Predict on the test set
+
+# Step 5: Predict
 y_pred = knn_regressor.predict(X_test)
-# Step 6: Evaluate the model
+
+# Step 6: Evaluate
 mse = mean_squared_error(y_test, y_pred)
 print(f"Mean Squared Error: {mse:.2f}")
-# Step 7: Visualize the results
-plt.scatter(X_train, y_train, color='blue', label='Training Data')
-plt.scatter(X_test, y_test, color='green', label='Testing Data')
-plt.scatter(X_test, y_pred, color='red', label='Predictions')
+
+# Step 7: Visualization
+plt.scatter(X_train, y_train, label='Training Data')
+plt.scatter(X_test, y_test, label='Testing Data')
+plt.scatter(X_test, y_pred, label='Predictions')
+
 plt.xlabel('Normalized Size of House')
 plt.ylabel('Price ($1000s)')
 plt.title('KNN Regression')
