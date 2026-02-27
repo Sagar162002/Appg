@@ -2,46 +2,68 @@ import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
+
 # Step 1: Define the KNN algorithm
 class KNNClassifier:
-def __init__(self, k=3):
-self.k = k
-def fit(self, X_train, y_train):
-self.X_train = X_train
-self.y_train = y_train
-def predict(self, X_test):
-predictions = []
-for x in X_test:
-# Compute distances from x to all training points
-distances = np.sqrt(np.sum((self.X_train - x) ** 2, axis=1))
-# Get indices of k nearest neighbors
-nearest_neighbors_indices = np.argsort(distances)[:self.k]
-# Find the most common class among neighbors
-nearest_neighbors_labels = self.y_train[nearest_neighbors_indices]
-most_common_label = np.bincount(nearest_neighbors_labels).argmax()
-predictions.append(most_common_label)
-return np.array(predictions)
+
+    def __init__(self, k=3):
+        self.k = k
+
+    def fit(self, X_train, y_train):
+        self.X_train = X_train
+        self.y_train = y_train
+
+    def predict(self, X_test):
+        predictions = []
+
+        for x in X_test:
+            # Compute Euclidean distances
+            distances = np.sqrt(np.sum((self.X_train - x) ** 2, axis=1))
+
+            # Get indices of k nearest neighbors
+            nearest_neighbors_indices = np.argsort(distances)[:self.k]
+
+            # Get their labels
+            nearest_neighbors_labels = self.y_train[nearest_neighbors_indices]
+
+            # Majority voting
+            most_common_label = np.bincount(nearest_neighbors_labels).argmax()
+
+            predictions.append(most_common_label)
+
+        return np.array(predictions)
+
+
 # Step 2: Load the Iris dataset
 iris = load_iris()
-X = iris.data # Features
-y = iris.target # Labels (classes)
-# Step 3: Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
-# Step 4: Train the KNN classifier
-k = 5 # Number of neighbors
+X = iris.data
+y = iris.target
+
+# Step 3: Split data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, random_state=42
+)
+
+# Step 4: Train model
+k = 5
 knn = KNNClassifier(k=k)
 knn.fit(X_train, y_train)
-# Step 5: Predict on the test set
+
+# Step 5: Predict
 y_pred = knn.predict(X_test)
-# Step 6: Evaluate and print results
+
+# Step 6: Evaluate
 accuracy = accuracy_score(y_test, y_pred)
 print(f"Accuracy: {accuracy * 100:.2f}%")
-# Step 7: Print correct and incorrect predictions
+
+# Step 7: Print correct predictions
 print("\nCorrect Predictions:")
 for i in range(len(y_test)):
-if y_test[i] == y_pred[i]:
-print(f"Test Sample {i}: True Label = {y_test[i]}, Predicted Label = {y_pred[i]}")
+    if y_test[i] == y_pred[i]:
+        print(f"Test Sample {i}: True Label = {y_test[i]}, Predicted Label = {y_pred[i]}")
+
+# Print incorrect predictions
 print("\nIncorrect Predictions:")
 for i in range(len(y_test)):
-if y_test[i] != y_pred[i]:
-print(f"Test Sample {i}: True Label = {y_test[i]}, Predicted Label = {y_pred[i]}")
+    if y_test[i] != y_pred[i]:
+        print(f"Test Sample {i}: True Label = {y_test[i]}, Predicted Label = {y_pred[i]}")
